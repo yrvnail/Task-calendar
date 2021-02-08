@@ -1,0 +1,8 @@
+{
+    "ContentLocation": "${SERVERWORKSPACE}/yr/yrvnail/OrionContent/taskScheduler",
+    "FullName": "taskScheduler",
+    "OrionVersion": 8,
+    "Properties": {},
+    "UniqueId": "taskScheduler",
+    "WorkspaceId": "yrvnail-OrionContent"
+}

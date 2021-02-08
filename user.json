@@ -1,0 +1,52 @@
+{
+    "FullName": "yrvnail",
+    "OrionVersion": 8,
+    "Properties": {
+        "Email": "yrvnail@gmail.com",
+        "LastLoginTimestamp": "1612793978664",
+        "Password": "LKMO-Efwz3w=,JJAo-mOHBrAGzRxtiVVFtg==",
+        "UserRights": [
+            {
+                "Method": 15,
+                "Uri": "/users/yrvnail"
+            },
+            {
+                "Method": 15,
+                "Uri": "/workspace/yrvnail-OrionContent"
+            },
+            {
+                "Method": 15,
+                "Uri": "/workspace/yrvnail-OrionContent/*"
+            },
+            {
+                "Method": 15,
+                "Uri": "/file/yrvnail-OrionContent"
+            },
+            {
+                "Method": 15,
+                "Uri": "/file/yrvnail-OrionContent/*"
+            }
+        ],
+        "UserRightsVersion": "3",
+        "watt/sap.watt.common.plugin.platform.service.keepalive.KeepAlive/nLastLogonTimestamp": "1612793980475",
+        "watt/sap.watt.common.plugin.welcomescreen.service.Version/localhost:8080": "v_181220",
+        "watt/sap.watt.common.repositorybrowser.service.RepositoryBrowserPersistence/linked": "false",
+        "watt/sap.watt.common.repositorybrowser.service.RepositoryBrowserPersistence/nodes": "[\"folder:/taskScheduler:workspace\"]",
+        "watt/sap.watt.common.repositorybrowser.service.RepositoryBrowserPersistence/selected": "folder:/taskScheduler:workspace",
+        "watt/sap.watt.common.repositorybrowser.service.RepositoryBrowserPersistence/version": "1",
+        "watt/sap.watt.common.service.ui.Perspective/_currentPerspective": "development",
+        "watt/sap.watt.common.service.ui.Perspective/development": "{\"center_bottom\":\"hidden\",\"left\":\"20%\",\"right\":\"hidden\",\"content\":{\"left\":\"repositorybrowser\",\"center_top\":\"content\"}}",
+        "watt/sap.watt.common.service.ui.Perspective/development_lastKnown": "{\"left\":\"20%\"}",
+        "watt/sap.watt.common.service.ui.Perspective/version": "1",
+        "watt/sap.watt.common.service.ui.WelcomeScreen/localhost:8080": "{\"oVersionUpdate\":{\"from\":\"\",\"to\":\"181220\"},\"bIsVersionUpdate\":false}",
+        "watt/sap.watt.ideplatform.generationwizard.recentlyUsedTemplates/ui5template.basicSAPUI5ApplicationProject": "1612794147948",
+        "watt/sap.watt.ideplatform.generationwizard.recentlyUsedTemplates/ui5template.basicSAPUI5ApplicationProjectCommon": "1612794147581",
+        "watt/sap.watt.ideplatform.generationwizard.sortMode/sortMode": "recentlyUsed",
+        "watt/sap.watt.platform.filefilter.FileFilterHide/hidden": "true",
+        "watt/sap.watt.platform.plugin.notificationmanager.service.NotificationManager/messages": "[]",
+        "watt/sap.watt.saptoolsets.fiori.editor.ui5wysiwygeditor/device": "tablet"
+    },
+    "UniqueId": "yrvnail",
+    "UserName": "yrvnail",
+    "WorkspaceIds": ["yrvnail-OrionContent"]
+}
