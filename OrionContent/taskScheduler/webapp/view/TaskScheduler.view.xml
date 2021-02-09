@@ -1,10 +1,20 @@
 <mvc:View controllerName="taskScheduler.controller.TaskScheduler" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:mvc="sap.ui.core.mvc"
-	displayBlock="true" xmlns="sap.m">
+	xmlns:core="sap.ui.core" xmlns="sap.m">
 	<App>
-		<pages>
-			<Page title="{i18n>title}">
-				<content></content>
-			</Page>
-		</pages>
+		<Page showHeader="false" busy="{tasks>/busy}" title="{i18n>ts.taskScheduler.title}">
+			<content>
+				<core:Fragment fragmentName="taskScheduler.fragment.TaskCalendar-M" type="XML"/>
+			</content>
+			<footer>
+				<OverflowToolbar>
+					<ToolbarSpacer/>
+					<Button text="{i18n>ts.taskScheduler.footer.button.addUser}" icon="sap-icon://add-employee" press="onCreateUserPress"/>
+				</OverflowToolbar>
+			</footer>
+		</Page>
+		<dependents>
+			<core:Fragment fragmentName="taskScheduler.fragment.dialogs.AddNewEmployee-MDialog" type="XML"/>
+			<core:Fragment fragmentName="taskScheduler.fragment.dialogs.AddNewTask-MDialog" type="XML"/>
+		</dependents>
 	</App>
 </mvc:View>

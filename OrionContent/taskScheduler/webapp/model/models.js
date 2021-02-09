@@ -10,6 +10,13 @@ sap.ui.define([
 			var oModel = new JSONModel(Device);
 			oModel.setDefaultBindingMode("OneWay");
 			return oModel;
+		},
+
+		createTasksModel: function() {
+			var sTaskViewModelPath = jQuery.sap.getModulePath("taskScheduler.model.TaskModel-Main", ".json");
+			var oTaskViewModel = new JSONModel(sTaskViewModelPath);
+			return oTaskViewModel;
+
 		}
 
 	};

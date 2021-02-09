@@ -1,1 +1,8 @@
-/* Enter your custom styles here */
+.customNoPaddingFormContainer>div>div>.sapUiRespGridSpanXL6.sapUiRespGridSpanL6.sapUiRespGridSpanM6.sapUiRespGridSpanS12{
+	padding-left: 0;
+	padding-right: 0;
+}
+
+.customMarginFormFields>div>.sapUiRespGrid.sapUiRespGridHSpace0>div>div>div{
+	margin-bottom: 1rem;
+}
