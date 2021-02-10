@@ -24,19 +24,23 @@
 		"TaskId": 0,
 		"TaskName": "Code Refactoring",
 		"StartDate": "",
-		"Days": 3.5
+		"Days": 3.5,
+		"Icon": "sap-icon://appointment"
 	}, {
 		"TaskId": 1,
 		"TaskName": "Code-review",
-		"Days": 3.5
+		"Days": 3.5,
+		"Icon": "sap-icon://appointment"
 	}, {
 		"TaskId": 2,
 		"TaskName": "Bugfix",
-		"Days": 3.5
+		"Days": 3.5,
+		"Icon": "sap-icon://appointment"
 	}, {
 		"TaskId": 3,
 		"TaskName": "Company interview",
-		"Days": 3.5
+		"Days": 3.5,
+		"Icon": "sap-icon://appointment"
 	}],
 	"Employees": [{
 		"employeeId": 0,

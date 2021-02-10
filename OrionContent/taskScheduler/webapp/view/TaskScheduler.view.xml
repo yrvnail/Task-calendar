@@ -1,4 +1,4 @@
-<mvc:View controllerName="taskScheduler.controller.TaskScheduler" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:mvc="sap.ui.core.mvc"
+<mvc:View controllerName="taskScheduler.controller.TaskScheduler" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:mvc="sap.ui.core.mvc" xmlns:custom="taskScheduler.control"
 	xmlns:core="sap.ui.core" xmlns="sap.m" xmlns:dnd="sap.ui.core.dnd">
 	<App>
 		<SplitApp id="app" initialDetail="detail-MPage" initialMaster="master-MPage">
@@ -9,11 +9,11 @@
 					</content>
 					<footer>
 						<OverflowToolbar>
-							<Button text="{i18n>ts.taskScheduler.footer.button.dropToTaskPool}" icon="sap-icon://toaster-down">
-								<dragDropConfig>
-									<dnd:DragDropInfo sourceAggregation="items" targetElement="list2" targetAggregation="items" dropPosition="Between" drop="onDrop"/>
-								</dragDropConfig>
-							</Button>
+							<custom:CustomButton text="{i18n>ts.taskScheduler.footer.button.dropToTaskPool}" icon="sap-icon://toaster-down">
+								<custom:dragDropConfig>
+									<dnd:DropInfo drop="onDrop"/>
+								</custom:dragDropConfig>
+							</custom:CustomButton>
 							<ToolbarSpacer/>
 							<Button text="{i18n>ts.taskScheduler.footer.button.addUser}" icon="sap-icon://add-employee" press="onCreateUserPress"/>
 						</OverflowToolbar>
@@ -21,7 +21,7 @@
 				</Page>
 			</detailPages>
 			<masterPages>
-				<Page id="master-MPage" title="List" backgroundDesign="List" icon="sap-icon://action" class="sapUiStdPage">
+				<Page id="master-MPage" title="{i18n>ts.taskScheduler.master.page.title}" backgroundDesign="List" icon="sap-icon://action" class="sapUiStdPage">
 					<content>
 						<core:Fragment fragmentName="taskScheduler.fragment.PoolTaskList-M" type="XML"/>
 					</content>
