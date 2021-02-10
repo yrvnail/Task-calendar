@@ -1,7 +1,10 @@
 {
 	"busy": false,
+	"validateNewTask": false,
+	"validateNewEmployee": false,
 	"startDate": "2021-02-08T08:00:00",
-	"nonWorkingDays": [0, 1, 2, 3, 4, 5, 6, 7, 8, 19, 20, 21, 22, 23],
+	"nonWorkingHours": [0, 1, 2, 3, 4, 5, 6, 7, 8, 19, 20, 21, 22, 23],
+	"nonWorkingDays": [5, 6],
 	"EmployeeIdCounter": 0,
 	"TaskIdCounter": 0,
 	"TaskType": [{
@@ -21,19 +24,19 @@
 		"TaskId": 0,
 		"TaskName": "Code Refactoring",
 		"StartDate": "",
-		"Hours": 3.5
+		"Days": 3.5
 	}, {
 		"TaskId": 1,
 		"TaskName": "Code-review",
-		"Hours": 3.5
+		"Days": 3.5
 	}, {
 		"TaskId": 2,
 		"TaskName": "Bugfix",
-		"Hours": 3.5
+		"Days": 3.5
 	}, {
 		"TaskId": 3,
 		"TaskName": "Company interview",
-		"Hours": 3.5
+		"Days": 3.5
 	}],
 	"Employees": [{
 		"employeeId": 0,
@@ -41,9 +44,9 @@
 		"Tasks": [{
 			"TaskId": 4,
 			"TaskName": "Creating a task scheduling application",
-			"Hours": 3.0,
+			"Days": 3.0,
 			"StartDate": "2021-02-08T09:00:00",
-			"EndDate": "2021-02-08T12:00:00",
+			"EndDate": "2021-02-11T09:00:00",
 			"Icon": "sap-icon://appointment"
 		}]
 	}, {

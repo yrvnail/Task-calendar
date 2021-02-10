@@ -14,7 +14,7 @@
 									<Label text="{i18n>ts.taskScheduler.dialogs.addNewUser.employeeName}" required="true" wrapping="true"/>
 								</f:label>
 								<f:fields>
-									<Input id="AddNewEmployeeName-MInput" placeholder="{i18n>ts.taskScheduler.dialogs.addNewUser.employeeName.placeholder}" maxLength="50"/>
+									<Input id="AddNewEmployeeName-MInput" placeholder="{i18n>ts.taskScheduler.dialogs.addNewUser.employeeName.placeholder}" maxLength="50" liveChange="onValidateEmployee"/>
 								</f:fields>
 							</f:FormElement>
 						</f:formElements>
@@ -22,7 +22,7 @@
 				</f:formContainers>
 			</f:Form>
 		</content>
-		<beginButton><Button text="{i18n>ts.taskScheduler.dialogs.addNewUser.btn.Ok}" press="onPressAddNewUserOk"/></beginButton>
+		<beginButton><Button text="{i18n>ts.taskScheduler.dialogs.addNewUser.btn.Ok}" press="onPressAddNewUserOk" enabled="{tasks>/validateNewEmployee}"/></beginButton>
 		<endButton><Button text="{i18n>ts.taskScheduler.dialogs.addNewUser.btn.Cancel}" press="onPressAddNewUserCancel"/></endButton>
 	</Dialog>
 </core:FragmentDefinition>

@@ -1,0 +1,15 @@
+<core:FragmentDefinition xmlns:core="sap.ui.core" xmlns="sap.m" xmlns:unified="sap.ui.unified" xmlns:dnd="sap.ui.core.dnd">
+	<List id="idList" items="{tasks>/UnassignedTasks}" growing="true" growingThreshold="50" includeItemInSelection="false">
+		<infoToolbar>
+			<OverflowToolbar visible="false" id="idInfoToolbar">
+				<Label id="idFilterLabel"/>
+			</OverflowToolbar>
+		</infoToolbar>
+		<dragDropConfig>
+			<dnd:DragDropInfo sourceAggregation="items" targetElement="TasksPlanningCalendar-M-Table" targetAggregation="items" dragEnter="onListPlanningCalendardragEnter"
+				dragStart="onListPlanningCalendardragStart" drop="onListPlanningCalendarDrop"/>
+		</dragDropConfig>
+		<StandardListItem id="listItem" title="{tasks>TaskName}" description="{tasks>ShipperName}" icon="{tasks>ProductPicUrl}"
+			iconDensityAware="false" iconInset="false"/>
+	</List>
+</core:FragmentDefinition>

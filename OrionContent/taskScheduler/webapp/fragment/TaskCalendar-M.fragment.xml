@@ -4,19 +4,16 @@
 				startDate="{path: 'tasks>/startDate', formatter:'.formatter.formatDate'}"
 				rows="{path: 'tasks>/Employees'}"
 				appointmentsVisualization="Filled">
-			<toolbarContent>
-				<Button id="addNewTask-MButton" icon="sap-icon://add" press="addNewTaskToPool" text="{i18n>ts.taskScheduler.toolbar.button.AddNewTask}"/>
-			</toolbarContent>
 			<rows>
 				<PlanningCalendarRow
-						nonWorkingHours="{tasks>/nonWorkingDays}"
+						nonWorkingDays="{tasks>/nonWorkingDays}"
+						nonWorkingHours="{tasks>/nonWorkingHours}"
 						title="{tasks>EmployeeName}"
 						enableAppointmentsDragAndDrop="true"
-						enableAppointmentsResize="true"
+						enableAppointmentsResize="false"
 						enableAppointmentsCreate="true"
 						appointmentDrop="handleAppointmentDrop"
 						appointmentDragEnter="handleAppointmentDragEnter"
-						appointmentResize="handleAppointmentResize"
 						appointmentCreate="handleAppointmentCreate"
 						appointments="{path : 'tasks>Tasks', templateShareable: false}">
 					<appointments>

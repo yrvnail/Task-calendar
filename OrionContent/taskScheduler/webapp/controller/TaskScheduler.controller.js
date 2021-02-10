@@ -23,9 +23,10 @@ sap.ui.define([
 			this._oNewTaskTypeMSelect = this.byId("NewTaskType-MSelect");
 			this._oNewTaskDescriptionMInput = this.byId("NewTaskDescription-MInput");
 			this._oNewTaskDateMPicker = this.byId("NewTaskDate-MPicker");
-			this._oNewTaskHoursMInput = this.byId("NewTaskHours-MInput");
+			this._oNewTaskDaysMInput = this.byId("NewTaskDays-MInput");
 
 			this._oAddNewEmployeeNameMInput = this.byId("AddNewEmployeeName-MInput");
+			this._oNewTaskFormContainerM = this.byId("NewTaskFormContainer-M");
 
 		},
 
@@ -55,11 +56,12 @@ sap.ui.define([
 				"iconId": this._oNewTaskTypeMSelect.getSelectedKey(),
 				"TaskName": this._oNewTaskDescriptionMInput.getValue(),
 				"StartDate": this._oNewTaskDateMPicker.getValue(),
-				"Hours": this._oNewTaskHoursMInput.getValue()
+				"Days": this._oNewTaskDaysMInput.getValue()
 			};
 			oTaskModel.setProperty("/TaskIdCounter", ++oNewTask.TaskId);
 			oTaskModel.getProperty("/UnassignedTasks").push(oNewTask);
 			this.showMessageToast("ts.taskScheduler.addNewTask.success");
+			oTaskModel.refresh();
 			this.onPressAddNewTaskCancel();
 		},
 
@@ -71,13 +73,14 @@ sap.ui.define([
 			var oTaskModel = this.getModel("tasks");
 			var oNewEmployee = {
 				"employeeId": oTaskModel.getProperty("/EmployeeIdCounter"),
-				"EmployeeName": this._oNewTaskTypeMSelect.getSelectedKey(),
+				"EmployeeName": this._oAddNewEmployeeNameMInput.getValue(),
 				"Tasks": []
 
 			};
 			oTaskModel.setProperty("/EmployeeIdCounter", ++oNewEmployee.employeeId);
 			oTaskModel.getProperty("/Employees").push(oNewEmployee);
 			this.showMessageToast("ts.taskScheduler.addNewEmployee.success");
+			oTaskModel.refresh();
 			this.onPressAddNewUserCancel();
 		},
 
@@ -106,142 +109,184 @@ sap.ui.define([
 			return;
 		},
 
-		onValidateHoursCount: function(oEvent) {
-			var oInput = oEvent.getSource();
-			var sValue = oInput.getValue();
-
-			var oNumericRegex = /([0-9]([0-9]{0,2})((?=[\.,\,])([\.,\,][0-9]{0,1})))|[1-9]([0-9]{0,2})/;
-
-			var aMatchValue = sValue.match(oNumericRegex);
-			var sNewValue = aMatchValue ? aMatchValue[0].replace(",", ".") : null;
-			if (sNewValue) {
-				oInput.setValue(sNewValue);
-			} else {
-				oInput.setValue(0.0);
-			}
-
-			oInput.setValueState(ValueState.None);
-			if (!sValue) {
-				oInput.setValue(0.0);
-				oInput.setValueState(ValueState.Error);
-			}
-
-		},
-		
 		handleAppointmentDragEnter: function(oEvent) {
-				if (this.isAppointmentOverlap(oEvent, oEvent.getParameter("calendarRow"))) {
-					oEvent.preventDefault();
+			if (this.isAppointmentOverlap(oEvent, oEvent.getParameter("calendarRow"))) {
+				oEvent.preventDefault();
+			}
+		},
+
+		handleAppointmentDrop: function(oEvent) {
+			var oAppointment = oEvent.getParameter("appointment"),
+				oStartDate = oEvent.getParameter("startDate"),
+				oEndDate = oEvent.getParameter("endDate"),
+				oCalendarRow = oEvent.getParameter("calendarRow"),
+				bCopy = oEvent.getParameter("copy"),
+				sTitle = oAppointment.getTitle(),
+				oModel = this.getView().getModel("tasks"),
+				oAppBindingContext = oAppointment.getBindingContext("tasks"),
+				oRowBindingContext = oCalendarRow.getBindingContext("tasks"),
+				handleAppointmentDropBetweenRows = function() {
+					var aPath = oAppBindingContext.getPath().split("/"),
+						iIndex = aPath.pop(),
+						sRowAppointmentsPath = aPath.join("/");
+
+					oRowBindingContext.getObject().Tasks.push(
+						oModel.getProperty(oAppBindingContext.getPath())
+					);
+
+					oModel.getProperty(sRowAppointmentsPath).splice(iIndex, 1);
+				};
+
+			if (bCopy) { // "copy" appointment
+				var oProps = Object.assign({}, oModel.getProperty(oAppointment.getBindingContext().getPath()));
+				oProps.start = oStartDate;
+				oProps.end = oEndDate;
+
+				oRowBindingContext.getObject().appointments.push(oProps);
+			} else { // "move" appointment
+				oModel.setProperty("StartDate", oStartDate, oAppBindingContext);
+				oModel.setProperty("EndDate", oEndDate, oAppBindingContext);
+
+				if (oAppointment.getParent() !== oCalendarRow) {
+					handleAppointmentDropBetweenRows();
 				}
-			},
-
-			handleAppointmentDrop: function (oEvent) {
-				var oAppointment = oEvent.getParameter("appointment"),
-					oStartDate = oEvent.getParameter("startDate"),
-					oEndDate = oEvent.getParameter("endDate"),
-					oCalendarRow = oEvent.getParameter("calendarRow"),
-					bCopy = oEvent.getParameter("copy"),
-					sTitle = oAppointment.getTitle(),
-					oModel = this.getView().getModel(),
-					oAppBindingContext = oAppointment.getBindingContext(),
-					oRowBindingContext = oCalendarRow.getBindingContext(),
-					handleAppointmentDropBetweenRows = function () {
-						var aPath = oAppBindingContext.getPath().split("/"),
-							iIndex = aPath.pop(),
-							sRowAppointmentsPath = aPath.join("/");
-
-						oRowBindingContext.getObject().appointments.push(
-							oModel.getProperty(oAppBindingContext.getPath())
-						);
-
-						oModel.getProperty(sRowAppointmentsPath).splice(iIndex, 1);
-					};
-
-				if (bCopy) { // "copy" appointment
-					var oProps = Object.assign({}, oModel.getProperty(oAppointment.getBindingContext().getPath()));
-					oProps.start = oStartDate;
-					oProps.end = oEndDate;
-
-					oRowBindingContext.getObject().appointments.push(oProps);
-				} else { // "move" appointment
-					oModel.setProperty("start", oStartDate, oAppBindingContext);
-					oModel.setProperty("end", oEndDate, oAppBindingContext);
-
-					if (oAppointment.getParent() !== oCalendarRow) {
-						handleAppointmentDropBetweenRows();
-					}
-				}
-
-				oModel.refresh(true);
-
-				MessageToast.show(oCalendarRow.getTitle() + "'s '" + "Appointment '" + sTitle + "' now starts at \n" + oStartDate + "\n and end at \n" + oEndDate + ".");
-			},
-
-			handleAppointmentResize: function (oEvent) {
-				var oAppointment = oEvent.getParameter("appointment"),
-					oStartDate = oEvent.getParameter("startDate"),
-					oEndDate = oEvent.getParameter("endDate");
-
-				if (!this.isAppointmentOverlap(oEvent, oAppointment.getParent())) {
-					MessageToast.show("Appointment '" + oAppointment.getTitle() + "' now starts at \n" + oStartDate + "\n and end at \n" + oEndDate + ".");
-
-					oAppointment
-						.setStartDate(oStartDate)
-						.setEndDate(oEndDate);
-				} else {
-					MessageToast.show("As a manager you can not resize events if they overlap with another events");
-				}
-			},
-
-			handleAppointmentCreate: function (oEvent) {
-				var oStartDate = oEvent.getParameter("startDate"),
-					oEndDate = oEvent.getParameter("endDate"),
-					oPlanningCalendarRow = oEvent.getParameter("calendarRow"),
-					oModel = this.getView().getModel(),
-					sPath = oPlanningCalendarRow.getBindingContext().getPath();
-
-				oModel.getProperty(sPath).appointments.push({
-					title: "New Appointment",
-					start: oStartDate,
-					end: oEndDate
-				});
-
-				MessageToast.show("New Appointment is created at \n" + oStartDate + "\n and end at \n" + oEndDate + ".");
-
-				oModel.refresh(true);
-			},
-
-			isAppointmentOverlap: function (oEvent, oCalendarRow) {
-				var oAppointment = oEvent.getParameter("appointment"),
-					oStartDate = oEvent.getParameter("startDate"),
-					oEndDate = oEvent.getParameter("endDate"),
-					bAppointmentOverlapped;
-
-				if (this.getUserRole() === this.roles.manager) {
-					bAppointmentOverlapped = oCalendarRow.getAppointments().some(function (oCurrentAppointment) {
-						if (oCurrentAppointment === oAppointment) {
-							return;
-						}
-
-						var oAppStartTime = oCurrentAppointment.getStartDate().getTime(),
-							oAppEndTime = oCurrentAppointment.getEndDate().getTime();
-
-						if (oAppStartTime <= oStartDate.getTime() && oStartDate.getTime() < oAppEndTime) {
-							return true;
-						}
-
-						if (oAppStartTime < oEndDate.getTime() && oEndDate.getTime() <= oAppEndTime) {
-							return true;
-						}
-
-						if (oStartDate.getTime() <= oAppStartTime && oAppStartTime < oEndDate.getTime()) {
-							return true;
-						}
-					});
-				}
-
-				return bAppointmentOverlapped;
 			}
 
+			oModel.refresh(true);
+
+			MessageToast.show(oCalendarRow.getTitle() + "'s '" + "Appointment '" + sTitle + "' now starts at \n" + oStartDate +
+				"\n and end at \n" + oEndDate + ".");
+		},
+
+		handleAppointmentCreate: function(oEvent) {
+			var oStartDate = oEvent.getParameter("startDate"),
+				oEndDate = oEvent.getParameter("endDate"),
+				oPlanningCalendarRow = oEvent.getParameter("calendarRow"),
+				oModel = this.getView().getModel(),
+				sPath = oPlanningCalendarRow.getBindingContext().getPath();
+
+			oModel.getProperty(sPath).appointments.push({
+				title: "New Appointment",
+				start: oStartDate,
+				end: oEndDate
+			});
+
+			MessageToast.show("New Appointment is created at \n" + oStartDate + "\n and end at \n" + oEndDate + ".");
+
+			oModel.refresh(true);
+		},
+
+		isAppointmentOverlap: function(oEvent, oCalendarRow) {
+			var oAppointment = oEvent.getParameter("appointment"),
+				oStartDate = oEvent.getParameter("startDate"),
+				oEndDate = oEvent.getParameter("endDate"),
+				bAppointmentOverlapped;
+
+			bAppointmentOverlapped = oCalendarRow.getAppointments().some(function(oCurrentAppointment) {
+				if (oCurrentAppointment === oAppointment) {
+					return;
+				}
+
+				var oAppStartTime = oCurrentAppointment.getStartDate().getTime(),
+					oAppEndTime = oCurrentAppointment.getEndDate().getTime();
+
+				if (oAppStartTime <= oStartDate.getTime() && oStartDate.getTime() < oAppEndTime) {
+					return true;
+				}
+
+				if (oAppStartTime < oEndDate.getTime() && oEndDate.getTime() <= oAppEndTime) {
+					return true;
+				}
+
+				if (oStartDate.getTime() <= oAppStartTime && oAppStartTime < oEndDate.getTime()) {
+					return true;
+				}
+			});
+
+			return bAppointmentOverlapped;
+		},
+
+		onValidateEmployee: function(oEvent) {
+			var oTasksModel = this.getOwnerComponent().getModel("tasks");
+			var oControl = oEvent.getSource();
+			var bEmployeeNameFilled = oControl.getValue() ? true : false;
+			var oValueState = bEmployeeNameFilled ? ValueState.None : ValueState.Error;
+			oTasksModel.setProperty("/validateNewEmployee", bEmployeeNameFilled);
+			oControl.setValueState(oValueState);
+		},
+
+		onValidateTask: function(oEvent) {
+			var oTasksModel = this.getModel("tasks");
+			var oControl;
+			var oValueState;
+			var bIsFilledForm;
+
+			this._oNewTaskFormContainerM.getFormElements().forEach(function(oFormElement, iIndex) {
+
+				var bIsEmptyMandatory = false;
+				switch (iIndex) {
+					case 0:
+						oControl = oFormElement.getFields()[0];
+						bIsEmptyMandatory = !oControl.getSelectedItem();
+						oValueState = bIsEmptyMandatory ? ValueState.Error : ValueState.None;
+						oControl.setValueState(oValueState);
+						break;
+					case 1:
+						oControl = oFormElement.getFields()[0];
+						bIsEmptyMandatory = !oControl.getValue();
+						oValueState = bIsEmptyMandatory ? ValueState.Error : ValueState.None;
+						oControl.setValueState(oValueState);
+						break;
+					case 2:
+						var oDatePicker = oFormElement.getFields()[0];
+						var bIsEmptyMandatoryDatePicker = !oDatePicker.getValue();
+						var oValueStateDatePicker = bIsEmptyMandatoryDatePicker ? ValueState.Error : ValueState.None;
+						oDatePicker.setValueState(oValueStateDatePicker);
+
+						var oDaysInput = oFormElement.getFields()[1];
+						var sDaysValue = oDaysInput.getValue();
+
+						var oNumericRegex = /([0-9]([0-9]{0,1})((?=[\.,\,])([\.,\,][0-9]{0,1})))|[1-9]([0-9]{0,1})/;
+
+						var aMatchValue = sDaysValue.match(oNumericRegex);
+						var sNewValue = aMatchValue ? aMatchValue[0].replace(",", ".") : null;
+						if (sNewValue) {
+							oDaysInput.setValue(sNewValue);
+						} else {
+							oDaysInput.setValue(0.0);
+						}
+						var bIsEmptyMandatoryosDaysValueInput = parseFloat(oDaysInput.getValue()).toFixed(1) <= "0.0";
+						var oValueStateDaysInput = bIsEmptyMandatoryosDaysValueInput ? ValueState.Error : ValueState.None;
+						oDaysInput.setValueState(oValueStateDaysInput);
+
+						bIsEmptyMandatory = bIsEmptyMandatoryDatePicker || bIsEmptyMandatoryosDaysValueInput;
+						break;
+					default:
+						break;
+				}
+				bIsFilledForm = !bIsEmptyMandatory;
+			}.bind(this));
+			oTasksModel.setProperty("/validateNewTask", bIsFilledForm);
+			oTasksModel.refresh();
+		},
+
+		onListPlanningCalendarDrop: function(oEvent) {
+			var oDroppedControl = oEvent.getParameter("droppedControl");
+			var oDragSession = oEvent.getParameter("dragSession");
+			var cliId = oDroppedControl.getId();
+			var rowId = cliId.replace("-CLI", "");
+			var pcRow = sap.ui.getCore().byId(rowId);
+			var oBindingContext = pcRow.getBindingContext("tasks");
+			var resourceObj = oBindingContext.getObject();
+			var oDraggedRowContext = oDragSession.getComplexData("onListDragContext");
+		},
+
+		onListPlanningCalendardragStart: function(oEvent) {
+			var oDragSession = oEvent.getParameter("dragSession");
+			var oDraggedRow = oEvent.getParameter("target");
+			var oContextBinding = oDraggedRow.getBindingContext("tasks").getObject();
+			oDragSession.setComplexData("onListDragContext", oDraggedRow);
+		},
 
 	});
 });
