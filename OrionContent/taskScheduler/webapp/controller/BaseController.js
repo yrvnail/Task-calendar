@@ -1,8 +1,9 @@
 /*global history */
 sap.ui.define([
 	"sap/ui/core/mvc/Controller",
-	"sap/ui/core/routing/History"
-], function(Controller, History) {
+	"sap/ui/core/routing/History",
+	"sap/ui/model/json/JSONModel"
+], function(Controller, History, JSONModel) {
 	"use strict";
 
 	return Controller.extend("taskScheduler.controller.BaseController", {
@@ -35,6 +36,11 @@ sap.ui.define([
 
 		setBusy: function(state) {
 			this.getModel("appView").setProperty("/busy", state);
+		},
+
+		setJsonModel: function(sModelName) {
+			var oJsonModel = new JSONModel();
+			this.setModel(oJsonModel, sModelName);
 		}
 
 	});

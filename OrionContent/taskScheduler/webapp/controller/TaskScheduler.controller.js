@@ -18,6 +18,8 @@ sap.ui.define([
 			this._oTasksCalendar = this.byId("TasksPlanningCalendar-M");
 
 			this._oAddNewTaskMDialog = this.byId("AddNewTask-MDialog");
+			this._oEditTaskMDialog = this.byId("EditTask-MDialog");
+			this.setJsonModel("editModel", this._oEditTaskMDialog);
 			this._oAddNewEmployeeMDialog = this.byId("AddNewEmployee-MDialog");
 
 			this._oNewTaskTypeMSelect = this.byId("NewTaskType-MSelect");
@@ -25,8 +27,14 @@ sap.ui.define([
 			this._oNewTaskDateMPicker = this.byId("NewTaskDate-MPicker");
 			this._oNewTaskDaysMInput = this.byId("NewTaskDays-MInput");
 
+			this._oEditTypeMSelect = this.byId("EditTaskType-MSelect");
+			this._oEditDescriptionMInput = this.byId("EditTaskDescription-MInput");
+			this._oEditDateMPicker = this.byId("EditTaskDate-MPicker");
+			this._oEditDaysMInput = this.byId("EditTaskDays-MInput");
+
 			this._oAddNewEmployeeNameMInput = this.byId("AddNewEmployeeName-MInput");
 			this._oNewTaskFormContainerM = this.byId("NewTaskFormContainer-M");
+			this._oEditFormContainerM = this.byId("EditFormContainer-M");
 
 		},
 
@@ -219,7 +227,7 @@ sap.ui.define([
 			var oTasksModel = this.getModel("tasks");
 			var oControl;
 			var oValueState;
-			var bIsFilledForm;
+			var bIsFilledForm = true;
 
 			this._oNewTaskFormContainerM.getFormElements().forEach(function(oFormElement, iIndex) {
 
@@ -264,7 +272,9 @@ sap.ui.define([
 					default:
 						break;
 				}
-				bIsFilledForm = !bIsEmptyMandatory;
+				if (bIsEmptyMandatory) {
+					bIsFilledForm = false;
+				}
 			}.bind(this));
 			oTasksModel.setProperty("/validateNewTask", bIsFilledForm);
 			oTasksModel.refresh();
@@ -287,6 +297,120 @@ sap.ui.define([
 			var oContextBinding = oDraggedRow.getBindingContext("tasks").getObject();
 			oDragSession.setComplexData("onListDragContext", oDraggedRow);
 		},
+
+		onTaskDeletePress: function(oEvent) {
+			var sBindingPath = oEvent.getSource().getBindingContext("tasks").getPath();
+			MessageBox.confirm(this.getResourceBundle().getText("ts.taskScheduler.master.list.delete.confirmDelete"), {
+				onClose: function(sAction) {
+					if (sAction === "OK") {
+
+						var oTaskModel = this.getModel("tasks");
+						var aPath = sBindingPath.split("/");
+						var iCounter = aPath[aPath.length - 1];
+						var oTaskSet = oTaskModel.getProperty("/UnassignedTasks");
+						oTaskSet.splice(iCounter, 1);
+						this.showMessageToast("ts.taskScheduler.master.list.deleteTask.success");
+						oTaskModel.refresh(true);
+
+					}
+				}.bind(this)
+			});
+		},
+
+		onTaskEditPress: function(oEvent) {
+			var oBindingContext = oEvent.getSource().getBindingContext("tasks");
+			var oBindingContextObject = oBindingContext.getObject();
+			this.getModel("editModel").setData({
+				iconId: oBindingContextObject.iconId,
+				TaskName: oBindingContextObject.TaskName,
+				StartDate: oBindingContextObject.StartDate,
+				Days: oBindingContextObject.Days,
+				TaskPath: oBindingContext.getPath()
+			});
+
+			this._oEditTaskMDialog.open();
+		},
+
+		onPressEditTaskCancel: function(oEvent) {
+			this._oEditTaskMDialog.close();
+		},
+
+		onPressEditTaskOk: function(oEvent) {
+			var oTasksModel = this.getModel("tasks");
+			this.onValidateEditTask();
+			if (oTasksModel.getProperty("/validateEditTask")) {
+				var oEditTaskData = this.getView().getModel("editModel").getData();
+				var oTaskData = this.getView().getModel("tasks").getProperty(oEditTaskData.TaskPath);
+
+				oTaskData.Days = oEditTaskData.Days;
+				oTaskData.iconId = oEditTaskData.iconId;
+				oTaskData.StartDate = oEditTaskData.StartDate ? oEditTaskData.StartDate : new Date(Date.now());
+				oTaskData.TaskName = oEditTaskData.TaskName;
+				this.showMessageToast("ts.taskScheduler.master.list.editTask.success");
+				oTasksModel.refresh(true);
+				this._oEditTaskMDialog.close();
+			} else {
+				this.showMessageToast("ts.taskScheduler.master.list.editTask.fillFields");
+			}
+
+		},
+
+		onValidateEditTask: function(oEvent) {
+			var oTasksModel = this.getModel("tasks");
+			var oControl;
+			var oValueState;
+			var bIsFilledForm = true;
+
+			this._oEditFormContainerM.getFormElements().forEach(function(oFormElement, iIndex) {
+
+				var bIsEmptyMandatory = false;
+				switch (iIndex) {
+					case 0:
+						oControl = oFormElement.getFields()[0];
+						bIsEmptyMandatory = !oControl.getSelectedItem();
+						oValueState = bIsEmptyMandatory ? ValueState.Error : ValueState.None;
+						oControl.setValueState(oValueState);
+						break;
+					case 1:
+						oControl = oFormElement.getFields()[0];
+						bIsEmptyMandatory = !oControl.getValue();
+						oValueState = bIsEmptyMandatory ? ValueState.Error : ValueState.None;
+						oControl.setValueState(oValueState);
+						break;
+					case 2:
+						var oDatePicker = oFormElement.getFields()[0];
+						var bIsEmptyMandatoryDatePicker = !oDatePicker.getValue();
+						var oValueStateDatePicker = bIsEmptyMandatoryDatePicker ? ValueState.Error : ValueState.None;
+						oDatePicker.setValueState(oValueStateDatePicker);
+
+						var oDaysInput = oFormElement.getFields()[1];
+						var sDaysValue = oDaysInput.getValue();
+
+						var oNumericRegex = /([0-9]([0-9]{0,1})((?=[\.,\,])([\.,\,][0-9]{0,1})))|[1-9]([0-9]{0,1})/;
+
+						var aMatchValue = sDaysValue.match(oNumericRegex);
+						var sNewValue = aMatchValue ? aMatchValue[0].replace(",", ".") : null;
+						if (sNewValue) {
+							oDaysInput.setValue(sNewValue);
+						} else {
+							oDaysInput.setValue(0.0);
+						}
+						var bIsEmptyMandatoryosDaysValueInput = parseFloat(oDaysInput.getValue()).toFixed(1) <= "0.0";
+						var oValueStateDaysInput = bIsEmptyMandatoryosDaysValueInput ? ValueState.Error : ValueState.None;
+						oDaysInput.setValueState(oValueStateDaysInput);
+
+						bIsEmptyMandatory = bIsEmptyMandatoryDatePicker || bIsEmptyMandatoryosDaysValueInput;
+						break;
+					default:
+						break;
+				}
+				if (bIsEmptyMandatory) {
+					bIsFilledForm = false;
+				}
+			}.bind(this));
+			oTasksModel.setProperty("/validateEditTask", bIsFilledForm);
+			oTasksModel.refresh();
+		}
 
 	});
 });

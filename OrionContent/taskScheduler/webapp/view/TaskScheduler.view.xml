@@ -38,6 +38,7 @@
 		<dependents>
 			<core:Fragment fragmentName="taskScheduler.fragment.dialogs.AddNewEmployee-MDialog" type="XML"/>
 			<core:Fragment fragmentName="taskScheduler.fragment.dialogs.AddNewTask-MDialog" type="XML"/>
+			<core:Fragment fragmentName="taskScheduler.fragment.dialogs.EditTask-MDialog" type="XML"/>
 		</dependents>
 	</App>
 </mvc:View>

@@ -33,7 +33,7 @@
 								</f:label>
 								<f:fields>
 									<DateTimePicker id="NewTaskDate-MPicker" displayFormat="short" required="true" change="onValidateTask"/>
-									<Input id="NewTaskDays-MInput" placeholder="{i18n>ts.taskScheduler.dialogs.addNewTaskToPool.hours.placeholder}"
+									<Input id="NewTaskDays-MInput" placeholder="{i18n>ts.taskScheduler.dialogs.addNewTaskToPool.days.placeholder}"
 										liveChange="onValidateTask">
 										<layoutData>
 											<l:GridData span="XL1 L1 M2 S4"/>

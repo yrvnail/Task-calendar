@@ -1,6 +1,7 @@
 {
 	"busy": false,
 	"validateNewTask": false,
+	"validateEditTask": true,
 	"validateNewEmployee": false,
 	"startDate": "2021-02-08T08:00:00",
 	"nonWorkingHours": [0, 1, 2, 3, 4, 5, 6, 7, 8, 19, 20, 21, 22, 23],
@@ -23,24 +24,27 @@
 	"UnassignedTasks": [{
 		"TaskId": 0,
 		"TaskName": "Code Refactoring",
-		"StartDate": "",
+		"StartDate": "2021-02-08T10:00:00",
 		"Days": 3.5,
-		"Icon": "sap-icon://appointment"
+		"iconId": 0
 	}, {
 		"TaskId": 1,
 		"TaskName": "Code-review",
+		"StartDate": "2021-02-08T11:00:00",
 		"Days": 3.5,
-		"Icon": "sap-icon://appointment"
+		"iconId": 0
 	}, {
 		"TaskId": 2,
 		"TaskName": "Bugfix",
+		"StartDate": "2021-02-08T12:00:00",
 		"Days": 3.5,
-		"Icon": "sap-icon://appointment"
+		"iconId": 0
 	}, {
 		"TaskId": 3,
 		"TaskName": "Company interview",
+		"StartDate": "2021-02-08T13:00:00",
 		"Days": 3.5,
-		"Icon": "sap-icon://appointment"
+		"iconId": 0
 	}],
 	"Employees": [{
 		"employeeId": 0,
@@ -51,7 +55,7 @@
 			"Days": 3.0,
 			"StartDate": "2021-02-08T09:00:00",
 			"EndDate": "2021-02-11T09:00:00",
-			"Icon": "sap-icon://appointment"
+			"iconId": 0
 		}]
 	}, {
 		"employeeId": 1,
