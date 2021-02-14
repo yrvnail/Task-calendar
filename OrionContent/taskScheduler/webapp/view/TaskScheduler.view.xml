@@ -11,7 +11,7 @@
 						<OverflowToolbar>
 							<custom:CustomButton text="{i18n>ts.taskScheduler.footer.button.dropToTaskPool}" icon="sap-icon://toaster-down">
 								<custom:dragDropConfig>
-									<dnd:DropInfo drop="onDrop"/>
+									<dnd:DropInfo drop="onUnassignTaskFromEmployee"/>
 								</custom:dragDropConfig>
 							</custom:CustomButton>
 							<ToolbarSpacer/>
@@ -39,6 +39,7 @@
 			<core:Fragment fragmentName="taskScheduler.fragment.dialogs.AddNewEmployee-MDialog" type="XML"/>
 			<core:Fragment fragmentName="taskScheduler.fragment.dialogs.AddNewTask-MDialog" type="XML"/>
 			<core:Fragment fragmentName="taskScheduler.fragment.dialogs.EditTask-MDialog" type="XML"/>
+			<core:Fragment fragmentName="taskScheduler.fragment.dialogs.AssignTask-MDialog" type="XML"/>
 		</dependents>
 	</App>
 </mvc:View>

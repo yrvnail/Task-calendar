@@ -19,10 +19,18 @@ sap.ui.define([], function() {
 
 			return sDate;
 		},
-		
+
 		getI18nText: function(sText) {
 			var oI18n = this.getResourceBundle();
 			return oI18n.getText(sText);
+		},
+
+		getTaskType: function(sIconId, aTaskType) {
+			// var aTaskType = this.getModel("tasks").getProperty("TaskType");
+			var aNeededTaskType = aTaskType.filter(function(oTaskType) {
+				return oTaskType.iconId == sIconId;
+			});
+			return aNeededTaskType[0].icon ? aNeededTaskType[0].icon : "";
 		}
 
 	};

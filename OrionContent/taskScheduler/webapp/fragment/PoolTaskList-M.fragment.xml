@@ -5,6 +5,9 @@
 				<Label id="idFilterLabel"/>
 			</OverflowToolbar>
 		</infoToolbar>
+		<!--<dragDropConfig>-->
+		<!--	<dnd:DragDropInfo sourceAggregation="items" dragStart="onListPlanningCalendardragStart" drop="onListPlanningCalendarDrop" groupName="DragDropConfig"/>-->
+		<!--</dragDropConfig>-->
 		<dragDropConfig>
 			<dnd:DragDropInfo sourceAggregation="items" targetElement="TasksPlanningCalendar-M-Table" targetAggregation="items"
 				dragEnter="onListPlanningCalendardragEnter" dragStart="onListPlanningCalendardragStart" drop="onListPlanningCalendarDrop"/>

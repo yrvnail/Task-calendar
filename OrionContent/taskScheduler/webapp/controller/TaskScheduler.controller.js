@@ -20,6 +20,8 @@ sap.ui.define([
 			this._oAddNewTaskMDialog = this.byId("AddNewTask-MDialog");
 			this._oEditTaskMDialog = this.byId("EditTask-MDialog");
 			this.setJsonModel("editModel", this._oEditTaskMDialog);
+			this._oAssignTaskMDialog = this.byId("AssignTask-MDialog");
+			this.setJsonModel("assignModel", this._oAssignTaskMDialog);
 			this._oAddNewEmployeeMDialog = this.byId("AddNewEmployee-MDialog");
 
 			this._oNewTaskTypeMSelect = this.byId("NewTaskType-MSelect");
@@ -111,16 +113,10 @@ sap.ui.define([
 
 		},
 
-		//TODO: доделать
-		getIconById: function(sIconId) {
-			var oTaskModel = this.getModel("tasks");
-			return;
-		},
-
 		handleAppointmentDragEnter: function(oEvent) {
-			if (this.isAppointmentOverlap(oEvent, oEvent.getParameter("calendarRow"))) {
-				oEvent.preventDefault();
-			}
+			// if (this.isAppointmentOverlap(oEvent, oEvent.getParameter("calendarRow"))) {
+			// 	oEvent.preventDefault();
+			// }
 		},
 
 		handleAppointmentDrop: function(oEvent) {
@@ -129,7 +125,6 @@ sap.ui.define([
 				oEndDate = oEvent.getParameter("endDate"),
 				oCalendarRow = oEvent.getParameter("calendarRow"),
 				bCopy = oEvent.getParameter("copy"),
-				sTitle = oAppointment.getTitle(),
 				oModel = this.getView().getModel("tasks"),
 				oAppBindingContext = oAppointment.getBindingContext("tasks"),
 				oRowBindingContext = oCalendarRow.getBindingContext("tasks"),
@@ -145,13 +140,13 @@ sap.ui.define([
 					oModel.getProperty(sRowAppointmentsPath).splice(iIndex, 1);
 				};
 
-			if (bCopy) { // "copy" appointment
+			if (bCopy) {
 				var oProps = Object.assign({}, oModel.getProperty(oAppointment.getBindingContext().getPath()));
 				oProps.start = oStartDate;
 				oProps.end = oEndDate;
 
 				oRowBindingContext.getObject().appointments.push(oProps);
-			} else { // "move" appointment
+			} else {
 				oModel.setProperty("StartDate", oStartDate, oAppBindingContext);
 				oModel.setProperty("EndDate", oEndDate, oAppBindingContext);
 
@@ -162,26 +157,7 @@ sap.ui.define([
 
 			oModel.refresh(true);
 
-			MessageToast.show(oCalendarRow.getTitle() + "'s '" + "Appointment '" + sTitle + "' now starts at \n" + oStartDate +
-				"\n and end at \n" + oEndDate + ".");
-		},
-
-		handleAppointmentCreate: function(oEvent) {
-			var oStartDate = oEvent.getParameter("startDate"),
-				oEndDate = oEvent.getParameter("endDate"),
-				oPlanningCalendarRow = oEvent.getParameter("calendarRow"),
-				oModel = this.getView().getModel(),
-				sPath = oPlanningCalendarRow.getBindingContext().getPath();
-
-			oModel.getProperty(sPath).appointments.push({
-				title: "New Appointment",
-				start: oStartDate,
-				end: oEndDate
-			});
-
-			MessageToast.show("New Appointment is created at \n" + oStartDate + "\n and end at \n" + oEndDate + ".");
-
-			oModel.refresh(true);
+			this.showMessageToast("ts.taskScheduler.dndTaskInCalendar.success");
 		},
 
 		isAppointmentOverlap: function(oEvent, oCalendarRow) {
@@ -280,6 +256,12 @@ sap.ui.define([
 			oTasksModel.refresh();
 		},
 
+		onListPlanningCalendardragStart: function(oEvent) {
+			var oDragSession = oEvent.getParameter("dragSession");
+			var oDraggedRow = oEvent.getParameter("target");
+			oDragSession.setComplexData("onListDragContext", oDraggedRow);
+		},
+
 		onListPlanningCalendarDrop: function(oEvent) {
 			var oDroppedControl = oEvent.getParameter("droppedControl");
 			var oDragSession = oEvent.getParameter("dragSession");
@@ -289,13 +271,33 @@ sap.ui.define([
 			var oBindingContext = pcRow.getBindingContext("tasks");
 			var resourceObj = oBindingContext.getObject();
 			var oDraggedRowContext = oDragSession.getComplexData("onListDragContext");
+			var oDraggedRowObject = oDraggedRowContext.getBindingContext("tasks").getObject();
+
+			this.getModel("assignModel").setData({
+				TaskId: oDraggedRowObject.TaskId,
+				TaskName: oDraggedRowObject.TaskName,
+				StartDate: oDraggedRowObject.StartDate,
+				Days: oDraggedRowObject.Days,
+				iconId: oDraggedRowObject.iconId,
+				DraggedTaskPath: oDraggedRowContext.getBindingContext("tasks").getPath(),
+				EmployeeName: resourceObj.EmployeeName,
+				TargetEmployeePath: oBindingContext.getPath()
+			});
+
+			this._oAssignTaskMDialog.open();
 		},
 
-		onListPlanningCalendardragStart: function(oEvent) {
-			var oDragSession = oEvent.getParameter("dragSession");
-			var oDraggedRow = oEvent.getParameter("target");
-			var oContextBinding = oDraggedRow.getBindingContext("tasks").getObject();
-			oDragSession.setComplexData("onListDragContext", oDraggedRow);
+		onUnassignTaskFromEmployee: function(oEvent) {
+			var oDraggedControlBindingContext = oEvent.getParameter("draggedControl").getBindingContext("tasks");
+			var oDraggedControlObject = oDraggedControlBindingContext.getObject();
+			var sBindingPath = oDraggedControlBindingContext.getPath();
+			var sPathToTaskArray = sBindingPath.substring(0, sBindingPath.lastIndexOf("/") + 1);
+			var oTaskModel = this.getModel("tasks");
+			var iCounter = sBindingPath.substring(sBindingPath.lastIndexOf("/") + 1, sBindingPath.length);
+			var oTaskSet = oTaskModel.getProperty(sPathToTaskArray);
+			oTaskModel.getProperty("/UnassignedTasks").push(oDraggedControlObject);
+			oTaskSet.splice(iCounter, 1);
+			oTaskModel.refresh(true);
 		},
 
 		onTaskDeletePress: function(oEvent) {
@@ -353,6 +355,38 @@ sap.ui.define([
 				this.showMessageToast("ts.taskScheduler.master.list.editTask.fillFields");
 			}
 
+		},
+		onPressAssignTaskOk: function(oEvent) {
+			var oTasksModel = this.getModel("tasks");
+			var oAssignTaskData = this.getView().getModel("assignModel").getData();
+			var sSourcePath = oAssignTaskData.DraggedTaskPath;
+			var oTargetTaskData = oTasksModel.getProperty(oAssignTaskData.TargetEmployeePath + "/Tasks");
+			var oEndDate = this.addDays(oAssignTaskData.StartDate, oAssignTaskData.Days);
+			var oTargetObject = {
+				Days: oAssignTaskData.Days,
+				EndDate: oEndDate,
+				StartDate: oAssignTaskData.StartDate,
+				TaskId: oAssignTaskData.TaskId,
+				TaskName: oAssignTaskData.TaskName,
+				iconId: oAssignTaskData.iconId
+			};
+			oTargetTaskData.push(oTargetObject);
+
+			var aPath = sSourcePath.split("/");
+			var iCounter = aPath[aPath.length - 1];
+			var oTaskSet = oTasksModel.getProperty("/UnassignedTasks");
+			oTaskSet.splice(iCounter, 1);
+			this.showMessageToast("ts.taskScheduler.assignTask.success");
+			oTasksModel.refresh(true);
+			this._oAssignTaskMDialog.close();
+		},
+
+		addDays: function(sStartDate, sDays) {
+			return new Date(Date.parse(sStartDate) + 24 * 60 * 60 * 1000 * sDays);
+		},
+
+		onPressAssignTaskCancel: function(oEvent) {
+			this._oAssignTaskMDialog.close();
 		},
 
 		onValidateEditTask: function(oEvent) {
