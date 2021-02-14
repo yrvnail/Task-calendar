@@ -22,6 +22,9 @@ sap.ui.define([
 			this.setJsonModel("editModel", this._oEditTaskMDialog);
 			this._oAssignTaskMDialog = this.byId("AssignTask-MDialog");
 			this.setJsonModel("assignModel", this._oAssignTaskMDialog);
+			this._oDisplayTaskMDialog = this.byId("DisplayTask-MDialog");
+			this.setJsonModel("displayModel", this._oDisplayTaskMDialog);
+
 			this._oAddNewEmployeeMDialog = this.byId("AddNewEmployee-MDialog");
 
 			this._oNewTaskTypeMSelect = this.byId("NewTaskType-MSelect");
@@ -230,7 +233,7 @@ sap.ui.define([
 						var oDaysInput = oFormElement.getFields()[1];
 						var sDaysValue = oDaysInput.getValue();
 
-						var oNumericRegex = /([0-9]([0-9]{0,1})((?=[\.,\,])([\.,\,][0-9]{0,1})))|[1-9]([0-9]{0,1})/;
+						var oNumericRegex = /([0-9]([0-9]{0,2})((?=[\.,\,])([\.,\,][0-9]{0,1})))|[1-9]([0-9]{0,2})/;
 
 						var aMatchValue = sDaysValue.match(oNumericRegex);
 						var sNewValue = aMatchValue ? aMatchValue[0].replace(",", ".") : null;
@@ -290,6 +293,11 @@ sap.ui.define([
 		onUnassignTaskFromEmployee: function(oEvent) {
 			var oDraggedControlBindingContext = oEvent.getParameter("draggedControl").getBindingContext("tasks");
 			var oDraggedControlObject = oDraggedControlBindingContext.getObject();
+			var iStartDate = new Date(oDraggedControlObject.StartDate).getTime();
+			var iEndDate = new Date(oDraggedControlObject.EndDate).getTime();
+			var fDatesDifference = (Math.abs((iEndDate - iStartDate)) / (1000 * 60 * 60 * 24)).toFixed(1);
+
+			oDraggedControlObject.Days = fDatesDifference === "0.0" ? "0.1" : fDatesDifference;
 			var sBindingPath = oDraggedControlBindingContext.getPath();
 			var sPathToTaskArray = sBindingPath.substring(0, sBindingPath.lastIndexOf("/") + 1);
 			var oTaskModel = this.getModel("tasks");
@@ -420,7 +428,7 @@ sap.ui.define([
 						var oDaysInput = oFormElement.getFields()[1];
 						var sDaysValue = oDaysInput.getValue();
 
-						var oNumericRegex = /([0-9]([0-9]{0,1})((?=[\.,\,])([\.,\,][0-9]{0,1})))|[1-9]([0-9]{0,1})/;
+						var oNumericRegex = /([0-9]([0-9]{0,2})((?=[\.,\,])([\.,\,][0-9]{0,1})))|[1-9]([0-9]{0,2})/;
 
 						var aMatchValue = sDaysValue.match(oNumericRegex);
 						var sNewValue = aMatchValue ? aMatchValue[0].replace(",", ".") : null;
@@ -444,6 +452,34 @@ sap.ui.define([
 			}.bind(this));
 			oTasksModel.setProperty("/validateEditTask", bIsFilledForm);
 			oTasksModel.refresh();
+		},
+
+		onAppointmentSelectDisplay: function(oEvent) {
+			var oAppointment = oEvent.getParameter("appointment");
+			var oBindingContextObject = oAppointment.getBindingContext("tasks").getObject();
+
+			this.getModel("displayModel").setData({
+				TaskName: oBindingContextObject.TaskName,
+				StartDate: oBindingContextObject.StartDate,
+				Days: oBindingContextObject.Days,
+				iconId: oBindingContextObject.iconId,
+				EmployeeName: oAppointment.getParent().getBindingContext("tasks").getObject().EmployeeName
+			});
+			this._oDisplayTaskMDialog.open();
+		},
+
+		onPressDisplayTaskOk: function(oEvent) {
+			this._oDisplayTaskMDialog.close();
+		},
+
+		onAppointmentResize: function(oEvent) {
+			var oAppointment = oEvent.getParameter("appointment");
+			var oStartDate = oEvent.getParameter("startDate");
+			var oEndDate = oEvent.getParameter("endDate");
+			var oBindingObject = oAppointment.getBindingContext("tasks").getObject();
+			oAppointment.setStartDate(oStartDate).setEndDate(oEndDate);
+			oBindingObject.StartDate = oStartDate;
+			oBindingObject.EndDate = oEndDate;
 		}
 
 	});

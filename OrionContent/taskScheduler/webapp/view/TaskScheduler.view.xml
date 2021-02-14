@@ -1,5 +1,5 @@
-<mvc:View controllerName="taskScheduler.controller.TaskScheduler" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:mvc="sap.ui.core.mvc" xmlns:custom="taskScheduler.control"
-	xmlns:core="sap.ui.core" xmlns="sap.m" xmlns:dnd="sap.ui.core.dnd">
+<mvc:View controllerName="taskScheduler.controller.TaskScheduler" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:mvc="sap.ui.core.mvc"
+	xmlns:custom="taskScheduler.control" xmlns:core="sap.ui.core" xmlns="sap.m" xmlns:dnd="sap.ui.core.dnd">
 	<App>
 		<SplitApp id="app" initialDetail="detail-MPage" initialMaster="master-MPage">
 			<detailPages>
@@ -21,7 +21,8 @@
 				</Page>
 			</detailPages>
 			<masterPages>
-				<Page id="master-MPage" title="{i18n>ts.taskScheduler.master.page.title}" backgroundDesign="List" icon="sap-icon://action" class="sapUiStdPage">
+				<Page id="master-MPage" title="{i18n>ts.taskScheduler.master.page.title}" backgroundDesign="List" icon="sap-icon://action"
+					class="sapUiStdPage">
 					<content>
 						<core:Fragment fragmentName="taskScheduler.fragment.PoolTaskList-M" type="XML"/>
 					</content>
@@ -40,6 +41,7 @@
 			<core:Fragment fragmentName="taskScheduler.fragment.dialogs.AddNewTask-MDialog" type="XML"/>
 			<core:Fragment fragmentName="taskScheduler.fragment.dialogs.EditTask-MDialog" type="XML"/>
 			<core:Fragment fragmentName="taskScheduler.fragment.dialogs.AssignTask-MDialog" type="XML"/>
+			<core:Fragment fragmentName="taskScheduler.fragment.dialogs.DisplayTask-MDialog" type="XML"/>
 		</dependents>
 	</App>
 </mvc:View>
