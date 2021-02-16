@@ -457,11 +457,12 @@ sap.ui.define([
 		onAppointmentSelectDisplay: function(oEvent) {
 			var oAppointment = oEvent.getParameter("appointment");
 			var oBindingContextObject = oAppointment.getBindingContext("tasks").getObject();
-
+			var sDaysBetween = this.getDaysBeetween(oBindingContextObject.StartDate, oBindingContextObject.EndDate);
+			var fDaysBetween = sDaysBetween === "0.0" ? "0.1" : sDaysBetween;
 			this.getModel("displayModel").setData({
 				TaskName: oBindingContextObject.TaskName,
 				StartDate: oBindingContextObject.StartDate,
-				Days: oBindingContextObject.Days,
+				Days: fDaysBetween,
 				iconId: oBindingContextObject.iconId,
 				EmployeeName: oAppointment.getParent().getBindingContext("tasks").getObject().EmployeeName
 			});
@@ -480,6 +481,12 @@ sap.ui.define([
 			oAppointment.setStartDate(oStartDate).setEndDate(oEndDate);
 			oBindingObject.StartDate = oStartDate;
 			oBindingObject.EndDate = oEndDate;
+		},
+
+		getDaysBeetween: function(oStartDate, oEndDate) {
+			var oStartDateMs = (new Date(oStartDate)).getTime();
+			var oEndDateMs = (new Date(oEndDate)).getTime();
+			return (Math.abs((oStartDateMs - oEndDateMs)) / (1000 * 60 * 60 * 24)).toFixed(1);
 		}
 
 	});

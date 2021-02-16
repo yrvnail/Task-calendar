@@ -1,6 +1,40 @@
 <core:FragmentDefinition xmlns:core="sap.ui.core" xmlns="sap.m" xmlns:unified="sap.ui.unified" xmlns:dnd="sap.ui.core.dnd">
 	<PlanningCalendar id="TasksPlanningCalendar-M" startDate="{path: 'tasks>/startDate', formatter:'.formatter.formatDate'}"
-		rows="{path: 'tasks>/Employees'}" appointmentsVisualization="Filled" appointmentSelect="onAppointmentSelectDisplay">
+		rows="{path: 'tasks>/Employees'}" appointmentsVisualization="Filled" appointmentSelect="onAppointmentSelectDisplay" viewKey="hours">
+		<views>
+				<PlanningCalendarView
+					key="hours"
+					intervalType="Hour"
+					description="{i18n>ts.taskScheduler.toolbar.viewType.hours}"
+					intervalsS="9"
+					intervalsM="9"
+					intervalsL="9">
+				</PlanningCalendarView>
+				<PlanningCalendarView
+					key="days"
+					intervalType="Day"
+					description="{i18n>ts.taskScheduler.toolbar.viewType.days}"
+					intervalsS="7"
+					intervalsM="7"
+					intervalsL="7">
+				</PlanningCalendarView>
+				<PlanningCalendarView
+					key="weeks"
+					intervalType="Day"
+					description="{i18n>ts.taskScheduler.toolbar.viewType.weeks}"
+					intervalsS="31"
+					intervalsM="31"
+					intervalsL="31">
+				</PlanningCalendarView>
+				<PlanningCalendarView
+					key="months"
+					intervalType="Month"
+					description="{i18n>ts.taskScheduler.toolbar.viewType.months}"
+					intervalsS="6"
+					intervalsM="12"
+					intervalsL="12">
+				</PlanningCalendarView>
+			</views>
 		<rows>
 			<PlanningCalendarRow nonWorkingDays="{tasks>/nonWorkingDays}" nonWorkingHours="{tasks>/nonWorkingHours}" title="{tasks>EmployeeName}"
 				enableAppointmentsDragAndDrop="true" enableAppointmentsResize="true" appointmentResize="onAppointmentResize" enableAppointmentsCreate="true"

@@ -3,9 +3,9 @@
 	"validateNewTask": false,
 	"validateEditTask": true,
 	"validateNewEmployee": false,
-	"startDate": "2021-02-13T08:00:00",
-	"nonWorkingHours": [0, 1, 2, 3, 4, 5, 6, 7, 8, 19, 20, 21, 22, 23],
-	"nonWorkingDays": [5, 6],
+	"startDate": "2021-02-15T09:00:00",
+	"nonWorkingHours": [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 19, 20, 21, 22, 23],
+	"nonWorkingDays": [0, 6],
 	"EmployeeIdCounter": 10,
 	"TaskIdCounter": 0,
 	"TaskType": [{
@@ -65,8 +65,7 @@
 			"StartDate": "2021-02-13T09:00:00",
 			"EndDate": "2021-02-13T09:30:00",
 			"iconId": 1
-		},
-		{
+		}, {
 			"TaskId": 6,
 			"TaskName": "Meeting in skype",
 			"StartDate": "2021-02-13T09:30:00",
@@ -76,14 +75,13 @@
 	}, {
 		"employeeId": 2,
 		"EmployeeName": "Petr Petrov",
-		"Tasks": [
-			{
+		"Tasks": [{
 			"TaskId": 5,
 			"TaskName": "Interview",
 			"StartDate": "2021-02-14T11:00:00",
 			"EndDate": "2021-02-14T11:30:00",
 			"iconId": 2
-		},{
+		}, {
 			"TaskId": 5,
 			"TaskName": "Bugfix calendar app",
 			"StartDate": "2021-02-14T09:00:00",
