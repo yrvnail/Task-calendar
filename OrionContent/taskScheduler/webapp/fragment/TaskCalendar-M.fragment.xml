@@ -1,36 +1,37 @@
 <core:FragmentDefinition xmlns:core="sap.ui.core" xmlns="sap.m" xmlns:unified="sap.ui.unified" xmlns:dnd="sap.ui.core.dnd">
 	<PlanningCalendar id="TasksPlanningCalendar-M" startDate="{path: 'tasks>/startDate', formatter:'.formatter.formatDate'}"
-		rows="{path: 'tasks>/Employees'}" appointmentsVisualization="Filled" appointmentSelect="onAppointmentSelectDisplay" viewKey="hours">
+		rows="{path: 'tasks>/Employees'}" appointmentsVisualization="Filled" appointmentSelect="onAppointmentSelectDisplay" viewKey="day" 
+		class="customPlanningCalendarHeaderDay customPlanningCalendarHeaderDayText customPlanningCalendarHeaderDayName">
 		<views>
 				<PlanningCalendarView
-					key="hours"
+					key="day"
 					intervalType="Hour"
-					description="{i18n>ts.taskScheduler.toolbar.viewType.hours}"
+					description="{i18n>ts.taskScheduler.toolbar.viewType.day}"
 					intervalsS="9"
 					intervalsM="9"
 					intervalsL="9">
 				</PlanningCalendarView>
 				<PlanningCalendarView
-					key="days"
+					key="week"
 					intervalType="Day"
-					description="{i18n>ts.taskScheduler.toolbar.viewType.days}"
+					description="{i18n>ts.taskScheduler.toolbar.viewType.week}"
 					intervalsS="7"
 					intervalsM="7"
 					intervalsL="7">
 				</PlanningCalendarView>
 				<PlanningCalendarView
-					key="weeks"
+					key="month"
 					intervalType="Day"
-					description="{i18n>ts.taskScheduler.toolbar.viewType.weeks}"
+					description="{i18n>ts.taskScheduler.toolbar.viewType.month}"
 					intervalsS="31"
 					intervalsM="31"
 					intervalsL="31">
 				</PlanningCalendarView>
 				<PlanningCalendarView
-					key="months"
+					key="year"
 					intervalType="Month"
-					description="{i18n>ts.taskScheduler.toolbar.viewType.months}"
-					intervalsS="6"
+					description="{i18n>ts.taskScheduler.toolbar.viewType.year}"
+					intervalsS="12"
 					intervalsM="12"
 					intervalsL="12">
 				</PlanningCalendarView>

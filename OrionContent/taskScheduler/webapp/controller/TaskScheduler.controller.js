@@ -16,16 +16,16 @@ sap.ui.define([
 			this.setModel(oTasksModel, "tasks");
 
 			this._oTasksCalendar = this.byId("TasksPlanningCalendar-M");
-
+			
 			this._oAddNewTaskMDialog = this.byId("AddNewTask-MDialog");
 			this._oEditTaskMDialog = this.byId("EditTask-MDialog");
-			this.setJsonModel("editModel", this._oEditTaskMDialog);
 			this._oAssignTaskMDialog = this.byId("AssignTask-MDialog");
-			this.setJsonModel("assignModel", this._oAssignTaskMDialog);
 			this._oDisplayTaskMDialog = this.byId("DisplayTask-MDialog");
-			this.setJsonModel("displayModel", this._oDisplayTaskMDialog);
-
 			this._oAddNewEmployeeMDialog = this.byId("AddNewEmployee-MDialog");
+			
+			this.setJsonModel("assignModel", this._oAssignTaskMDialog);
+			this.setJsonModel("editModel", this._oEditTaskMDialog);
+			this.setJsonModel("displayModel", this._oDisplayTaskMDialog);
 
 			this._oNewTaskTypeMSelect = this.byId("NewTaskType-MSelect");
 			this._oNewTaskDescriptionMInput = this.byId("NewTaskDescription-MInput");
@@ -40,17 +40,6 @@ sap.ui.define([
 			this._oAddNewEmployeeNameMInput = this.byId("AddNewEmployeeName-MInput");
 			this._oNewTaskFormContainerM = this.byId("NewTaskFormContainer-M");
 			this._oEditFormContainerM = this.byId("EditFormContainer-M");
-
-		},
-
-		onAfterRendering: function() {
-			var oTaskModel = this.getModel("tasks");
-			oTaskModel.pSequentialImportCompleted.then(function() {
-
-			}.bind(this));
-		},
-
-		assignTaskToUser: function(oTask, oUser) {
 
 		},
 
@@ -71,6 +60,7 @@ sap.ui.define([
 				"StartDate": this._oNewTaskDateMPicker.getValue(),
 				"Days": this._oNewTaskDaysMInput.getValue()
 			};
+			//increase counter to generate unique id of task
 			oTaskModel.setProperty("/TaskIdCounter", ++oNewTask.TaskId);
 			oTaskModel.getProperty("/UnassignedTasks").push(oNewTask);
 			this.showMessageToast("ts.taskScheduler.addNewTask.success");
@@ -90,6 +80,7 @@ sap.ui.define([
 				"Tasks": []
 
 			};
+			//increase counter to generate unique id of employee
 			oTaskModel.setProperty("/EmployeeIdCounter", ++oNewEmployee.employeeId);
 			oTaskModel.getProperty("/Employees").push(oNewEmployee);
 			this.showMessageToast("ts.taskScheduler.addNewEmployee.success");
@@ -117,9 +108,19 @@ sap.ui.define([
 		},
 
 		handleAppointmentDragEnter: function(oEvent) {
-			// if (this.isAppointmentOverlap(oEvent, oEvent.getParameter("calendarRow"))) {
-			// 	oEvent.preventDefault();
-			// }
+			if (this.isWeekendDnD(oEvent)) {
+				//prevent drop
+				oEvent.preventDefault();
+			}
+		},
+
+		//prevent drop to weekend if we are in week view
+		isWeekendDnD: function(oEvent) {
+			if (this._oTasksCalendar.getViewKey() !== "week") {
+				return false;
+			}
+			var iStartDateDay = new Date(oEvent.getParameter("startDate")).getDay();
+			return (iStartDateDay === 6) || (iStartDateDay === 0);
 		},
 
 		handleAppointmentDrop: function(oEvent) {
@@ -163,36 +164,7 @@ sap.ui.define([
 			this.showMessageToast("ts.taskScheduler.dndTaskInCalendar.success");
 		},
 
-		isAppointmentOverlap: function(oEvent, oCalendarRow) {
-			var oAppointment = oEvent.getParameter("appointment"),
-				oStartDate = oEvent.getParameter("startDate"),
-				oEndDate = oEvent.getParameter("endDate"),
-				bAppointmentOverlapped;
-
-			bAppointmentOverlapped = oCalendarRow.getAppointments().some(function(oCurrentAppointment) {
-				if (oCurrentAppointment === oAppointment) {
-					return;
-				}
-
-				var oAppStartTime = oCurrentAppointment.getStartDate().getTime(),
-					oAppEndTime = oCurrentAppointment.getEndDate().getTime();
-
-				if (oAppStartTime <= oStartDate.getTime() && oStartDate.getTime() < oAppEndTime) {
-					return true;
-				}
-
-				if (oAppStartTime < oEndDate.getTime() && oEndDate.getTime() <= oAppEndTime) {
-					return true;
-				}
-
-				if (oStartDate.getTime() <= oAppStartTime && oAppStartTime < oEndDate.getTime()) {
-					return true;
-				}
-			});
-
-			return bAppointmentOverlapped;
-		},
-
+		//fields validation before employee creation
 		onValidateEmployee: function(oEvent) {
 			var oTasksModel = this.getOwnerComponent().getModel("tasks");
 			var oControl = oEvent.getSource();
@@ -202,55 +174,66 @@ sap.ui.define([
 			oControl.setValueState(oValueState);
 		},
 
+		//validate all fields before task creation
 		onValidateTask: function(oEvent) {
 			var oTasksModel = this.getModel("tasks");
 			var oControl;
 			var oValueState;
 			var bIsFilledForm = true;
 
+			//loop for all elements in one FormContainer
 			this._oNewTaskFormContainerM.getFormElements().forEach(function(oFormElement, iIndex) {
 
 				var bIsEmptyMandatory = false;
 				switch (iIndex) {
 					case 0:
+						//task type field
 						oControl = oFormElement.getFields()[0];
 						bIsEmptyMandatory = !oControl.getSelectedItem();
 						oValueState = bIsEmptyMandatory ? ValueState.Error : ValueState.None;
 						oControl.setValueState(oValueState);
 						break;
 					case 1:
+						//task description field
 						oControl = oFormElement.getFields()[0];
 						bIsEmptyMandatory = !oControl.getValue();
 						oValueState = bIsEmptyMandatory ? ValueState.Error : ValueState.None;
 						oControl.setValueState(oValueState);
 						break;
 					case 2:
+						//task sap.m.DatePicker and hours fields
 						var oDatePicker = oFormElement.getFields()[0];
-						var bIsEmptyMandatoryDatePicker = !oDatePicker.getValue();
-						var oValueStateDatePicker = bIsEmptyMandatoryDatePicker ? ValueState.Error : ValueState.None;
+						var bIsEmptyOrWeekendDatePicker = this.validateDateDatePicker(oDatePicker.getValue());
+						//set valueState of sap.m.DatePicker
+						var oValueStateDatePicker = bIsEmptyOrWeekendDatePicker ? ValueState.Error : ValueState.None;
 						oDatePicker.setValueState(oValueStateDatePicker);
-
+						
 						var oDaysInput = oFormElement.getFields()[1];
 						var sDaysValue = oDaysInput.getValue();
-
+						
+						//regular expression for matching number with desirable precision
 						var oNumericRegex = /([0-9]([0-9]{0,2})((?=[\.,\,])([\.,\,][0-9]{0,1})))|[1-9]([0-9]{0,2})/;
 
 						var aMatchValue = sDaysValue.match(oNumericRegex);
 						var sNewValue = aMatchValue ? aMatchValue[0].replace(",", ".") : null;
+						
+						//if we don't have any matches of regular expression, we will replace value to "0.0"
 						if (sNewValue) {
 							oDaysInput.setValue(sNewValue);
 						} else {
 							oDaysInput.setValue(0.0);
 						}
+						//validation for emptyness of task hours field 
 						var bIsEmptyMandatoryosDaysValueInput = parseFloat(oDaysInput.getValue()).toFixed(1) <= "0.0";
 						var oValueStateDaysInput = bIsEmptyMandatoryosDaysValueInput ? ValueState.Error : ValueState.None;
 						oDaysInput.setValueState(oValueStateDaysInput);
 
-						bIsEmptyMandatory = bIsEmptyMandatoryDatePicker || bIsEmptyMandatoryosDaysValueInput;
+						bIsEmptyMandatory = bIsEmptyOrWeekendDatePicker || bIsEmptyMandatoryosDaysValueInput;
 						break;
 					default:
 						break;
 				}
+				//Summary validation for all fields
 				if (bIsEmptyMandatory) {
 					bIsFilledForm = false;
 				}
@@ -258,10 +241,27 @@ sap.ui.define([
 			oTasksModel.setProperty("/validateNewTask", bIsFilledForm);
 			oTasksModel.refresh();
 		},
-
+		
+		//Method for validating datepicker in edit and create task
+		validateDateDatePicker: function(sDate) {
+			if (!sDate) {
+				return true;
+			}
+			var iStartDateDay = new Date(sDate).getDay();
+			//if day === saturday or day === sunday
+			var bIsWeekend = (iStartDateDay === 6) || (iStartDateDay === 0);
+			if (bIsWeekend) {
+				this.showMessageToast("ts.taskScheduler.dialogs.datePicker.weekend");
+				return true;
+			} else {
+				return false;
+			}
+		},
+		
 		onListPlanningCalendardragStart: function(oEvent) {
 			var oDragSession = oEvent.getParameter("dragSession");
 			var oDraggedRow = oEvent.getParameter("target");
+			//set dragged data to drag session
 			oDragSession.setComplexData("onListDragContext", oDraggedRow);
 		},
 
@@ -275,7 +275,8 @@ sap.ui.define([
 			var resourceObj = oBindingContext.getObject();
 			var oDraggedRowContext = oDragSession.getComplexData("onListDragContext");
 			var oDraggedRowObject = oDraggedRowContext.getBindingContext("tasks").getObject();
-
+			
+			//assign data from dragged object to temporary model 
 			this.getModel("assignModel").setData({
 				TaskId: oDraggedRowObject.TaskId,
 				TaskName: oDraggedRowObject.TaskName,
@@ -295,19 +296,31 @@ sap.ui.define([
 			var oDraggedControlObject = oDraggedControlBindingContext.getObject();
 			var iStartDate = new Date(oDraggedControlObject.StartDate).getTime();
 			var iEndDate = new Date(oDraggedControlObject.EndDate).getTime();
+			
+			// Round days difference between StartDate and EndDate of appointment to one digit after point
 			var fDatesDifference = (Math.abs((iEndDate - iStartDate)) / (1000 * 60 * 60 * 24)).toFixed(1);
-
+			
+			//if we have days count beetween 0.0 and 0.1 we will round it to 0.1
 			oDraggedControlObject.Days = fDatesDifference === "0.0" ? "0.1" : fDatesDifference;
+			
+			//get dragged object binding context path
 			var sBindingPath = oDraggedControlBindingContext.getPath();
+			//path to task array in calendar
 			var sPathToTaskArray = sBindingPath.substring(0, sBindingPath.lastIndexOf("/") + 1);
 			var oTaskModel = this.getModel("tasks");
+			//get index of element in calendar
 			var iCounter = sBindingPath.substring(sBindingPath.lastIndexOf("/") + 1, sBindingPath.length);
+			//get object from task model
 			var oTaskSet = oTaskModel.getProperty(sPathToTaskArray);
+			//push object from employee's task array to unassigned task array
 			oTaskModel.getProperty("/UnassignedTasks").push(oDraggedControlObject);
+			//remove old object from eployee array
 			oTaskSet.splice(iCounter, 1);
+			//task model refresh
 			oTaskModel.refresh(true);
 		},
-
+		
+		//method for delete entry in unassigned task list
 		onTaskDeletePress: function(oEvent) {
 			var sBindingPath = oEvent.getSource().getBindingContext("tasks").getPath();
 			MessageBox.confirm(this.getResourceBundle().getText("ts.taskScheduler.master.list.delete.confirmDelete"), {
@@ -328,8 +341,11 @@ sap.ui.define([
 		},
 
 		onTaskEditPress: function(oEvent) {
+			//get binding context of unassigned task
 			var oBindingContext = oEvent.getSource().getBindingContext("tasks");
+			//get object for edit
 			var oBindingContextObject = oBindingContext.getObject();
+			//set data to temporary model
 			this.getModel("editModel").setData({
 				iconId: oBindingContextObject.iconId,
 				TaskName: oBindingContextObject.TaskName,
@@ -345,6 +361,7 @@ sap.ui.define([
 			this._oEditTaskMDialog.close();
 		},
 
+		//method to save new changes in task from unassigned task array
 		onPressEditTaskOk: function(oEvent) {
 			var oTasksModel = this.getModel("tasks");
 			this.onValidateEditTask();
@@ -364,6 +381,8 @@ sap.ui.define([
 			}
 
 		},
+		
+		//method for assign task to employee dialog ok press
 		onPressAssignTaskOk: function(oEvent) {
 			var oTasksModel = this.getModel("tasks");
 			var oAssignTaskData = this.getView().getModel("assignModel").getData();
@@ -373,13 +392,15 @@ sap.ui.define([
 			var oTargetObject = {
 				Days: oAssignTaskData.Days,
 				EndDate: oEndDate,
-				StartDate: oAssignTaskData.StartDate,
+				StartDate: new Date(oAssignTaskData.StartDate),
 				TaskId: oAssignTaskData.TaskId,
 				TaskName: oAssignTaskData.TaskName,
 				iconId: oAssignTaskData.iconId
 			};
+			//push task from master list array to chosen employee task array
 			oTargetTaskData.push(oTargetObject);
-
+			
+			//remove old object from master list
 			var aPath = sSourcePath.split("/");
 			var iCounter = aPath[aPath.length - 1];
 			var oTaskSet = oTasksModel.getProperty("/UnassignedTasks");
@@ -388,15 +409,18 @@ sap.ui.define([
 			oTasksModel.refresh(true);
 			this._oAssignTaskMDialog.close();
 		},
-
+		
+		
+		//add days to start date
 		addDays: function(sStartDate, sDays) {
 			return new Date(Date.parse(sStartDate) + 24 * 60 * 60 * 1000 * sDays);
 		},
-
+		
 		onPressAssignTaskCancel: function(oEvent) {
 			this._oAssignTaskMDialog.close();
 		},
-
+		
+		//validation for edit task, same as validateTask method 
 		onValidateEditTask: function(oEvent) {
 			var oTasksModel = this.getModel("tasks");
 			var oControl;
@@ -421,8 +445,8 @@ sap.ui.define([
 						break;
 					case 2:
 						var oDatePicker = oFormElement.getFields()[0];
-						var bIsEmptyMandatoryDatePicker = !oDatePicker.getValue();
-						var oValueStateDatePicker = bIsEmptyMandatoryDatePicker ? ValueState.Error : ValueState.None;
+						var bIsEmptyOrWeekendDatePicker = this.validateDateDatePicker(oDatePicker.getValue());
+						var oValueStateDatePicker = bIsEmptyOrWeekendDatePicker ? ValueState.Error : ValueState.None;
 						oDatePicker.setValueState(oValueStateDatePicker);
 
 						var oDaysInput = oFormElement.getFields()[1];
@@ -441,7 +465,7 @@ sap.ui.define([
 						var oValueStateDaysInput = bIsEmptyMandatoryosDaysValueInput ? ValueState.Error : ValueState.None;
 						oDaysInput.setValueState(oValueStateDaysInput);
 
-						bIsEmptyMandatory = bIsEmptyMandatoryDatePicker || bIsEmptyMandatoryosDaysValueInput;
+						bIsEmptyMandatory = bIsEmptyOrWeekendDatePicker || bIsEmptyMandatoryosDaysValueInput;
 						break;
 					default:
 						break;
@@ -453,7 +477,8 @@ sap.ui.define([
 			oTasksModel.setProperty("/validateEditTask", bIsFilledForm);
 			oTasksModel.refresh();
 		},
-
+		
+		//display task in calendar
 		onAppointmentSelectDisplay: function(oEvent) {
 			var oAppointment = oEvent.getParameter("appointment");
 			var oBindingContextObject = oAppointment.getBindingContext("tasks").getObject();
@@ -472,7 +497,9 @@ sap.ui.define([
 		onPressDisplayTaskOk: function(oEvent) {
 			this._oDisplayTaskMDialog.close();
 		},
-
+		
+		
+		//resize task in planning calendar
 		onAppointmentResize: function(oEvent) {
 			var oAppointment = oEvent.getParameter("appointment");
 			var oStartDate = oEvent.getParameter("startDate");
@@ -482,7 +509,8 @@ sap.ui.define([
 			oBindingObject.StartDate = oStartDate;
 			oBindingObject.EndDate = oEndDate;
 		},
-
+		
+		//get days beetween start date and end date
 		getDaysBeetween: function(oStartDate, oEndDate) {
 			var oStartDateMs = (new Date(oStartDate)).getTime();
 			var oEndDateMs = (new Date(oEndDate)).getTime();

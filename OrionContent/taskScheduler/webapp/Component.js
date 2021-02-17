@@ -23,6 +23,7 @@ sap.ui.define([
 			// set the device model
 			this.setModel(models.createDeviceModel(), "device");
 			
+			//set tasks model
 			this.setModel(models.createTasksModel(), "tasks");
 		}
 	});
